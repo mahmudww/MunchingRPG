@@ -7,3 +7,5 @@ Hati-hati, dalam menara ini ada jebakan yang menyulitkanmu.
 Mini bos ada pada lantai/level 3 dan 6.
 Jika pemain kalah melawan monster, pemain akan turun 2 level.
 Kamu akan kalah kalau level kamu kurang dari 1.
+-
+Coba di sini: https://mahmudww.github.io/MunchingRPG/
