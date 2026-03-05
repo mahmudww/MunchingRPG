@@ -5,4 +5,5 @@ Tujuan akhir pemain adalah mengalahkan Lord Munchin di lantai 10 menaranya.
 Setiap mengalahkan monster, pemain akan naik 1 lantai/level. Untuk mengalahkan monster, pemain harus memiliki nilai ATK sama dengan atau kurang dari kekuatan musuh.
 Hati-hati, dalam menara ini ada jebakan yang menyulitkanmu.
 Mini bos ada pada lantai/level 3 dan 6.
+Jika pemain kalah melawan monster, pemain akan turun 2 level.
 Kamu akan kalah kalau level kamu kurang dari 1.
