@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUNCHING</title>
+    <style>
+        :root { --red: #8b0000; --gold: #f0e68c; --dark: #0a0a0a; --purple: #da70d6; --green: #2ecc71; }
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'serif'; background: var(--dark); color: #d1d1d1; 
+            margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; overflow-x: hidden; transition: background 1s;
+        }
+
+        h1 { margin: 10px 0; font-size: 1.8rem; color: var(--red); text-shadow: 0 0 15px black; text-align: center; }
+
+        .overlay-screen {
+            max-width: 450px; width: 90%; background: #1a0000; border: 2px solid var(--red);
+            padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 0 30px #000;
+        }
+        .story-text { font-style: italic; line-height: 1.6; color: var(--gold); margin-bottom: 20px; font-size: 0.95rem; text-align: justify; }
+        .rule-list { text-align: left; font-size: 0.85rem; margin-bottom: 20px; color: #ccc; }
+        .rule-list li { margin-bottom: 8px; }
+
+        .game-wrapper { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; width: 100%; max-width: 1100px; }
+        .side-panel { flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 10px; }
+        .main-panel { 
+            flex: 1.5; min-width: 320px; background: #111; border: 2px solid #333;
+            border-radius: 15px; padding: 15px; text-align: center; position: relative;
+            box-shadow: inset 0 0 30px #000; transition: transform 0.1s;
+        }
+        .log-panel { 
+            flex: 1; min-width: 280px; background: rgba(0,0,0,0.8); border-left: 3px solid var(--red);
+            height: 500px; overflow-y: auto; padding: 10px; font-size: 0.85rem; font-style: italic;
+        }
+
+        .box { background: #1a0000; border: 1px solid var(--red); padding: 12px; border-radius: 8px; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.9rem; }
+        .total-pwr { grid-column: span 2; font-size: 1.6rem; color: #ff4444; border-top: 1px solid #444; margin-top: 5px; padding-top: 5px; text-align: center; font-weight: bold; }
+
+        .battery-stack { display: flex; flex-direction: column-reverse; gap: 3px; height: 150px; border: 2px solid #333; padding: 3px; border-radius: 5px; background: #000; }
+        .battery-cell { height: 12px; background: #222; transition: all 0.3s; border-radius: 2px; }
+        .battery-cell.active { background: var(--green); box-shadow: 0 0 8px var(--green); }
+        .battery-cell.boss-level { background: var(--red); }
+
+        .card { border: 1px solid #666; padding: 20px; margin: 10px auto; background: #222; width: 95%; max-width: 280px; border-radius: 12px; }
+        .monster-icon { font-size: 4rem; margin: 10px 0; display: block; }
+        .card.boss { border: 3px solid #ff0000; box-shadow: 0 0 25px var(--red); background: linear-gradient(180deg, #200 0%, #111 100%); }
+        .card.trap { border-color: var(--purple); }
+        
+        button { background: var(--red); color: white; border: none; padding: 12px; cursor: pointer; font-weight: bold; border-radius: 5px; width: 100%; text-transform: uppercase; }
+        button:hover { background: #ff0000; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; background: #000; color: #fff; border: 1px solid var(--red); border-radius: 5px; }
+
+        #dice-roll { font-size: 3.5rem; font-weight: bold; color: gold; margin: 10px; display: none; }
+        .inv-slot { display: inline-block; background: #333; padding: 4px 8px; margin: 2px; border-radius: 4px; font-size: 0.75rem; border: 1px solid #555; }
+        
+        .shake { animation: shakeAnim 0.3s; }
+        @keyframes shakeAnim { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-10px);} 75% {transform: translateX(10px);} }
+
+        @media (max-width: 768px) {
+            .game-wrapper { flex-direction: column; }
+            .log-panel { height: 180px; order: 3; }
+            .battery-stack { flex-direction: row; height: 30px; }
+            .battery-cell { flex: 1; height: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bgm" loop src="https://www.chosic.com/wp-content/uploads/2021/07/The-Old-Tower-Inn.mp3"></audio>
+    <audio id="sfx-door" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3"></audio>
+    <audio id="sfx-sword" src="https://assets.mixkit.co/active_storage/sfx/2047/2047-preview.mp3"></audio>
+    <audio id="sfx-dice" src="https://assets.mixkit.co/active_storage/sfx/1070/1070-preview.mp3"></audio>
+    <audio id="sfx-item" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3"></audio>
+    <audio id="sfx-trap" src="https://assets.mixkit.co/active_storage/sfx/2658/2658-preview.mp3"></audio>
+    <audio id="sfx-death" src="https://assets.mixkit.co/active_storage/sfx/2533/2533-preview.mp3"></audio>
+    <audio id="sfx-win" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
+
+    <h1>💀 MUNCHING 💀</h1>
+
+    <div id="story-screen" class="overlay-screen">
+        <h3>Alkisah...</h3>
+        <p class="story-text">
+            Dunia telah hancur. Kamu adalah petualang yang akan menantang Lord Munching, monster yang sedang menguasai dunia. Kamu berniat untuk masuk tower-nya untuk membunuh Lord Munching. Kamu harus memulai dari lantai 1 sampai 10.
+        </p>
+        <button onclick="showSetup()">LANJUTKAN</button>
+    </div>
+
+    <div id="setup-screen" class="overlay-screen" style="display:none;">
+        <h3>Aturan Menara</h3>
+        <ul class="rule-list">
+            <li>⚔️ <b>Level 10:</b> Sarang Lord Munching.</li>
+            <li>❌ <b>Kekalahan:</b> Turun <b>2 Lantai</b>.</li>
+            <li>🌀 <b>Void Portal:</b> Kembali ke <b>Lantai 1</b>.</li>
+            <li>💀 <b>Kematian:</b> Jika levelmu jatuh ke <b>0</b>, game berakhir.</li>
+            <li>⚖️ <b>Balance:</b> Peluang Monster, Trap, dan Item seimbang (33%).</li>
+        </ul>
+        <input type="text" id="playerName" placeholder="Masukkan namamu..." maxlength="12">
+        <button onclick="startGame()">MASUK KE MENARA</button>
+    </div>
+
+    <div id="game-ui" class="game-wrapper" style="display:none;">
+        <div class="side-panel">
+            <div class="box">
+                <div class="stats-grid">
+                    <div>👤 <span id="disp-name"></span></div>
+                    <div style="color:var(--gold); text-align: right;">⭐ Lvl: <span id="disp-lvl"></span></div>
+                    <div style="grid-column: span 2; font-size: 0.75rem; color: #aaa; border-bottom: 1px solid #444; padding: 5px 0;">
+                        📜 <span id="disp-race-info"></span>
+                    </div>
+                    <div class="total-pwr">ATK: <span id="disp-total"></span></div>
+                </div>
+            </div>
+            <div class="box" style="background: #111;">
+                <strong>🎒 Tas (Max 5)</strong>
+                <div id="inv-list" style="margin-top:8px; min-height: 40px;"></div>
+            </div>
+            <div class="battery-container"><div id="battery-stack" class="battery-stack"></div></div>
+        </div>
+
+        <div class="main-panel" id="main-panel">
+            <div id="narration-text" style="color:var(--gold); font-style: italic; min-height: 50px; font-size: 0.95rem;">Memasuki lantai berikutnya...</div>
+            <div id="dice-roll">🎲 0</div>
+            <div id="arena-slot"></div>
+            <div id="action-btns"><button onclick="explore()">JELAJAHI</button></div>
+            <div id="combat-btns" style="display:none;">
+                <button onclick="fight()" style="background:var(--red);">LAWAN!</button>
+                <button id="btn-run" onclick="attemptRun()" style="background:#444; margin-top:10px;">LARI</button>
+            </div>
+            <div id="replace-ui" style="display:none;">
+                <div id="replace-options"></div>
+                <button onclick="cancelItem()" style="background:#333; margin-top:10px;">Abaikan Item</button>
+            </div>
+        </div>
+        <div class="log-panel" id="game-log"></div>
+    </div>
+
+<script>
+    const races = {
+        "Orc": { pwr: 3, bonus: "+3 Base ATK", ico: "🐗" },
+        "Elf": { pwr: 1, bonus: "+1 Lari & +1 Base ATK", ico: "🧝" },
+        "Dwarf": { pwr: 1, bonus: "+1 Bonus Item & +1 Base ATK", ico: "🧔" },
+        "Human": { pwr: 2, bonus: "+2 Base ATK", ico: "👤" }
+    };
+
+    const monsterData = [
+        {n: "Slime Hijau", i: "🧪"}, {n: "Skeleton Archer", i: "💀"},
+        {n: "Zombie Kelaparan", i: "🧟"}, {n: "Shadow Wraith", i: "👻"},
+        {n: "Orc Berangas", i: "👹"}, {n: "Mimic Ganas", i: "📦"},
+        {n: "Kultis Gelap", i: "🧙"}
+    ];
+
+    const items = [
+        {n: "Belati Karat", p: 1}, {n: "Tameng Kayu", p: 2},
+        {n: "Cincin Api", p: 3}, {n: "Kapak Perang", p: 5},
+        {n: "Zirah Besi", p: 4}, {n: "Pedang Perak", p: 4}
+    ];
+
+    const traps = [
+        {n: "Jebakan Panah", e: "lvl", m: "Panah melesat dari dinding! Level -1.", i: "🏹"},
+        {n: "Void Portal", e: "reset", m: "Terhisap portal kembali ke Lantai 1!", i: "🌀"},
+        {n: "Pencuri Bayangan", e: "item", m: "Item dicuri!", i: "👤"}
+    ];
+
+    let p = { name: "", race: "", lvl: 1, basePwr: 0, inv: [] };
+    let currentCard = null;
+    let pendingItem = null;
+    let isDead = false;
+
+    function playSfx(id) {
+        const sound = document.getElementById(id);
+        if (sound) { sound.currentTime = 0; sound.play().catch(e => {}); }
+    }
+
+    function triggerShake() {
+        const pnl = document.getElementById('main-panel');
+        pnl.classList.add('shake');
+        setTimeout(() => pnl.classList.remove('shake'), 300);
+    }
+
+    function showSetup() {
+        document.getElementById('story-screen').style.display = 'none';
+        document.getElementById('setup-screen').style.display = 'block';
+    }
+
+    function startGame() {
+        p.name = document.getElementById('playerName').value || "Slayer";
+        p.race = Object.keys(races)[Math.floor(Math.random() * 4)];
+        p.basePwr = races[p.race].pwr;
+        document.getElementById('bgm').volume = 0.3;
+        document.getElementById('bgm').play();
+        document.getElementById('setup-screen').style.display = 'none';
+        document.getElementById('game-ui').style.display = 'flex';
+        initBattery();
+        updateUI();
+        log(`Mulai: ${p.name} sang ${p.race}`);
+    }
+
+    function initBattery() {
+        const stack = document.getElementById('battery-stack');
+        stack.innerHTML = '';
+        for (let i = 1; i <= 10; i++) {
+            let cell = document.createElement('div');
+            cell.className = 'battery-cell';
+            cell.id = `cell-${i}`;
+            if ([3, 6, 10].includes(i)) cell.classList.add('boss-level');
+            stack.appendChild(cell);
+        }
+    }
+
+    function explore() {
+        if (isDead) return;
+        playSfx('sfx-door');
+        document.getElementById('action-btns').style.display = 'none';
+        let slot = document.getElementById('arena-slot');
+        let nar = document.getElementById('narration-text');
+        
+        if ([3, 6, 10].includes(p.lvl)) {
+            const bosses = {
+                3: {l: 9, n: "GORGON", i: "🐍"},
+                6: {l: 18, n: "DEMON KNIGHT", i: "⚔️"},
+                10: {l: 28, n: "LORD MUNCHING", i: "👿"}
+            };
+            let b = bosses[p.lvl];
+            currentCard = { ...b, type: "boss" };
+            nar.innerText = "Aura kegelapan memuncak...";
+            slot.innerHTML = `<div class="card boss"><span class="monster-icon">${b.i}</span><b>${b.n}</b><br>POWER: ${b.l}</div>`;
+            document.getElementById('combat-btns').style.display = 'block';
+        } 
+        else {
+            let rng = Math.random();
+            if (rng < 0.33) {
+                let t = traps[Math.floor(Math.random()*traps.length)];
+                currentCard = { ...t, type: "trap" };
+                nar.innerText = "Bahaya mendadak!";
+                slot.innerHTML = `<div class="card trap"><span class="monster-icon">${t.i}</span><b>${t.n}</b><br>${t.m}</div>`;
+                applyTrap(t);
+            } 
+            else if (rng < 0.66) {
+                let m = monsterData[Math.floor(Math.random() * monsterData.length)];
+                let dp = p.lvl + Math.floor(Math.random() * 3) + 1;
+                currentCard = { n: m.n, l: dp, i: m.i, type: "monster" };
+                nar.innerText = "Sesuatu mendekat!";
+                slot.innerHTML = `<div class="card"><span class="monster-icon">${m.i}</span><b>${currentCard.n}</b><br>POWER: ${currentCard.l}</div>`;
+                document.getElementById('combat-btns').style.display = 'block';
+            } 
+            else {
+                let iBase = items[Math.floor(Math.random()*items.length)];
+                pendingItem = { n: iBase.n, p: iBase.p + (p.lvl > 5 ? 1 : 0) };
+                nar.innerText = "Harta karun!";
+                slot.innerHTML = `<div class="card" style="border-color:gold"><span class="monster-icon">💰</span><b>${pendingItem.n}</b><br>+${pendingItem.p} ATK</div>`;
+                handleItemAcquisition();
+            }
+        }
+    }
+
+    function fight() {
+        playSfx('sfx-sword');
+        let tp = calculateTotalPower();
+        if (tp >= currentCard.l) {
+            log(`✅ Menang! Mengalahkan ${currentCard.n}.`);
+            p.lvl++;
+            if (p.lvl > 10) win(); else nextTurn();
+        } else {
+            triggerShake();
+            log(`<span style="color:#ff4444">❌ Kalah! Kamu terhempas turun 2 lantai.</span>`);
+            p.lvl -= 2;
+            updateUI();
+            if (p.lvl < 1) checkDeath(`Kalah duel melawan ${currentCard.n}.`); else nextTurn();
+        }
+    }
+
+    function attemptRun() {
+        playSfx('sfx-dice');
+        const rollDisplay = document.getElementById('dice-roll');
+        rollDisplay.style.display = 'block';
+        let roll = Math.floor(Math.random() * 6) + 1;
+        if(p.race === "Elf") roll += 1;
+        rollDisplay.innerText = "🎲 " + (roll > 6 ? 6 : roll);
+        setTimeout(() => {
+            rollDisplay.style.display = 'none';
+            if (roll <= 2) {
+                triggerShake(); log(`<span style="color:#ff4444">GAGAL LARI! Level -1.</span>`);
+                p.lvl -= 1;
+                updateUI();
+                if (p.lvl < 1) checkDeath("Tewas saat melarikan diri."); else nextTurn();
+            } else if (roll <= 4) {
+                log("Berhasil kabur, tapi kehilangan item.");
+                if (p.inv.length > 0) p.inv.pop(); nextTurn();
+            } else {
+                log("Lari dengan selamat!"); nextTurn();
+            }
+        }, 700);
+    }
+
+    function applyTrap(t) {
+        playSfx('sfx-trap'); triggerShake();
+        log(`<span style="color:var(--purple); font-weight:bold;">⚠️ TERJEBAK: ${t.m}</span>`);
+        if (t.e === "lvl") p.lvl -= 1;
+        if (t.e === "reset") p.lvl = 1;
+        if (t.e === "item" && p.inv.length > 0) p.inv.pop();
+        updateUI();
+        if (p.lvl < 1) checkDeath(`Mati karena ${t.n}`); else setTimeout(nextTurn, 1800);
+    }
+
+    function calculateTotalPower() {
+        let itemPwr = p.inv.reduce((s, i) => s + i.p + (p.race === "Dwarf" ? 1 : 0), 0);
+        return p.lvl + p.basePwr + itemPwr;
+    }
+
+    function updateUI() {
+        document.getElementById('disp-name').innerText = p.name;
+        document.getElementById('disp-lvl').innerText = p.lvl;
+        document.getElementById('disp-total').innerText = calculateTotalPower();
+        document.getElementById('disp-race-info').innerText = `${races[p.race].ico} ${p.race}: ${races[p.race].bonus}`;
+        document.getElementById('inv-list').innerHTML = p.inv.map(i => `<span class="inv-slot">${i.n} (+${i.p})</span>`).join('');
+        for (let i = 1; i <= 10; i++) {
+            let cell = document.getElementById(`cell-${i}`);
+            if (i <= p.lvl) cell.classList.add('active'); else cell.classList.remove('active');
+        }
+    }
+
+    function handleItemAcquisition() {
+        playSfx('sfx-item');
+        if (p.inv.length < 5) {
+            p.inv.push(pendingItem); log(`Mendapat ${pendingItem.n}.`);
+            pendingItem = null; setTimeout(nextTurn, 1500);
+        } else {
+            document.getElementById('replace-ui').style.display = 'block';
+            let opt = document.getElementById('replace-options');
+            opt.innerHTML = p.inv.map((item, idx) => `<button onclick="replaceItem(${idx})">Ganti ${item.n}</button>`).join('');
+        }
+    }
+
+    function replaceItem(idx) { p.inv[idx] = pendingItem; pendingItem = null; document.getElementById('replace-ui').style.display = 'none'; nextTurn(); }
+    function cancelItem() { pendingItem = null; document.getElementById('replace-ui').style.display = 'none'; nextTurn(); }
+    function nextTurn() { if (isDead) return; document.getElementById('combat-btns').style.display = 'none'; document.getElementById('action-btns').style.display = 'block'; document.getElementById('arena-slot').innerHTML = ""; updateUI(); }
+    function log(m) { let l = document.getElementById('game-log'); l.innerHTML = `> ${m}<br>` + l.innerHTML; l.scrollTop = 0; }
+
+    function checkDeath(reason) {
+        isDead = true; playSfx('sfx-death'); document.getElementById('bgm').pause();
+        document.body.style.background = "#300";
+        log(`<span style="color:white; background:red; padding:2px;">RIP: ${reason}</span>`);
+        setTimeout(() => { alert("💀 DUNIA TERPURUK\n\n" + reason); location.reload(); }, 1500);
+    }
+
+    function win() {
+        document.getElementById('bgm').pause(); playSfx('sfx-win');
+        document.body.style.background = "gold";
+        log(`<span style="color:black; background:white; font-weight:bold;">🏆 LORD MUNCHING MATI! 🏆</span>`);
+        setTimeout(() => { alert("🏆 LEGENDA!\n\nTower runtuh!"); location.reload(); }, 1500);
+    }
+</script>
+</body>
+</html>
