@@ -8,6 +8,5 @@ Dunia sedang berada dalam kehancuran. Lord Munching, monster terkuat membuat dun
  <li>Mini bos ada pada level 3 dan 6.
  <li>Jika pemain kalah melawan monster, pemain akan turun 2 level.
  <li>Kamu akan kalah kalau level kamu kurang dari 1.
--
   
 Coba di sini: https://mahmudww.github.io/MunchingRPG/
