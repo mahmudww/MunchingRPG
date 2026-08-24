@@ -4,7 +4,7 @@ Before entering the tower, make sure you understand the rules.
 
 ### ⚔️ Combat
 - Each enemy has a specific **POWER** level.
-- Your total **ATK** is calculated from your current level, race bonus, and equipped items.
+- Your total **ATK** is calculated from your current level and equipped items.
 - You win if your **ATK is equal to or higher than the enemy's POWER**.
 - If you lose a fight, you fall **2 floors**.
 
