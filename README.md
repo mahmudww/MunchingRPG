@@ -27,7 +27,6 @@ If you don't want to fight, you can attempt to escape by rolling a die.
 - 🎲 **1–2:** Failed escape — lose 1 level.
 - 🎲 **3–4:** Escape successfully, but lose one item.
 - 🎲 **5–6:** Escape safely.
-- 🧝 **Elf:** Gets +1 to escape rolls.
 
 ### 💀 Death
 - If your level falls below **1**, you die.
