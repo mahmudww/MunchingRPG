@@ -1,12 +1,48 @@
-# MunchingRPG
-Dunia sedang berada dalam kehancuran. Lord Munching, monster terkuat membuat dunia porak poranda. Banyak orang yang mencoba mengalahkan Lord Munching di Menaranya. Sayangnya tidak ada yang berhasil. Apakah kamu siap menyelamatkan dunia?
--
- <li>Tujuan akhir pemain adalah mengalahkan Lord Munchin di level 10 menaranya.
- <li>Setiap mengalahkan monster, pemain akan naik 1 level. Untuk mengalahkan monster, pemain harus memiliki nilai ATK sama dengan atau kurang dari kekuatan musuh. 
- <li>Hati-hati, dalam menara ini ada jebakan yang menyulitkanmu. 
- <li>Jika memilih lari, maka dadu 6 sisi akan ter-generate secara random. Jika mendapatkan angka 1-2 maka gagal melarikan diri dan level akan berkurang 1. Jika mendapatkan angka 3-4 maka berhasil melarikan diri tapi akan kehilangan 1 item. Jika mendapatkan angka 5-6 maka berhasil melarikan diri tanpa konsekuensi. Tapi pemain tidak disarankan untuk lari saat melawan mini boss dan boss.
- <li>Mini bos ada pada level 3 dan 6.
- <li>Jika pemain kalah melawan monster, pemain akan turun 2 level.
- <li>Kamu akan kalah kalau level kamu kurang dari 1.
-  
-Coba di sini: https://mahmudww.github.io/MunchingRPG/
+## 📜 Game Rules
+
+Before entering the tower, make sure you understand the rules.
+
+### ⚔️ Combat
+- Each enemy has a specific **POWER** level.
+- Your total **ATK** is calculated from your current level, race bonus, and equipped items.
+- You win if your **ATK is equal to or higher than the enemy's POWER**.
+- If you lose a fight, you fall **2 floors**.
+
+### 🌀 Traps
+Be careful when exploring! Some floors may contain deadly traps.
+
+Possible traps include:
+- 🏹 **Arrow Trap** — Lose 1 level.
+- 🌀 **Void Portal** — Sent back to Floor 1.
+- 👤 **Shadow Thief** — Lose one item from your inventory.
+
+### 🎒 Items
+- You can carry a maximum of **5 items**.
+- Items provide additional **ATK**.
+- If your inventory is full and you find a new item, you must replace an existing item or discard the new one.
+
+### 🎲 Running Away
+If you don't want to fight, you can attempt to escape by rolling a die.
+
+- 🎲 **1–2:** Failed escape — lose 1 level.
+- 🎲 **3–4:** Escape successfully, but lose one item.
+- 🎲 **5–6:** Escape safely.
+- 🧝 **Elf:** Gets +1 to escape rolls.
+
+### 💀 Death
+- If your level falls below **1**, you die.
+- When you die, the game is over and your run must be restarted.
+
+### 🏰 The Tower
+- The tower has **10 floors**.
+- Floors **3, 6, and 10** contain boss battles.
+- Bosses become stronger as you climb higher.
+- Floor 10 is the final battle against **Lord Munching**.
+
+### 🏆 Victory
+Reach **Floor 10** and defeat **Lord Munching** to conquer the tower.
+
+> **Enter the tower. Defy fate. Become a legend.** 💀
+
+
+Play here: https://mahmudww.github.io/MunchingRPG/
