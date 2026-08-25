@@ -4,665 +4,2452 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MUNCHING</title>
+
     <style>
-        :root { --red: #8b0000; --gold: #f0e68c; --dark: #0a0a0a; --purple: #da70d6; --green: #2ecc71; }
-        * { box-sizing: border-box; }
-        body { 
-            font-family: 'serif'; background: var(--dark); color: #d1d1d1; 
-            margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh; overflow-x: hidden; transition: background 1s;
+        :root {
+            --bg: #080b10;
+            --panel: #111722;
+            --panel-light: #18202c;
+            --panel-hover: #222d3c;
+
+            --text: #e6e9ed;
+            --text-muted: #aab2bd;
+
+            --red: #d62839;
+            --red-dark: #8f1624;
+            --red-glow: #ff3b4d;
+
+            --gold: #f5c84c;
+            --gold-light: #ffe08a;
+
+            --purple: #b56cff;
+            --purple-dark: #713bb5;
+
+            --green: #39d98a;
+            --green-dark: #1d8f5b;
+
+            --blue: #4da3ff;
+
+            --border: #344052;
+            --border-light: #4c5a6d;
+
+            --dark: #080b10;
         }
 
-        h1 { margin: 10px 0; font-size: 1.8rem; color: var(--red); text-shadow: 0 0 15px black; text-align: center; }
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Georgia, 'Times New Roman', serif;
+
+            background:
+                radial-gradient(
+                    circle at top,
+                    #18202c 0%,
+                    #0b0f16 45%,
+                    #05070a 100%
+                );
+
+            color: var(--text);
+
+            margin: 0;
+            padding: 10px;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            min-height: 100vh;
+            overflow-x: hidden;
+
+            transition: background 1s;
+        }
+
+        h1 {
+            margin: 10px 0 18px;
+
+            font-size: 1.9rem;
+
+            color: var(--red-glow);
+
+            text-shadow:
+                0 0 10px rgba(255, 59, 77, 0.45),
+                0 0 25px rgba(0, 0, 0, 0.9);
+
+            text-align: center;
+
+            letter-spacing: 2px;
+        }
+
+        h3 {
+            color: var(--gold-light);
+            margin-top: 0;
+        }
+
+        /* =========================
+           OVERLAY / SETUP
+        ========================= */
 
         .overlay-screen {
-            max-width: 450px; width: 90%; background: #1a0000; border: 2px solid var(--red);
-            padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 0 30px #000;
+            max-width: 450px;
+            width: 90%;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #18202c,
+                    #0f151e
+                );
+
+            border: 2px solid var(--border-light);
+
+            padding: 25px;
+
+            border-radius: 12px;
+
+            text-align: center;
+
+            box-shadow:
+                0 15px 40px rgba(0, 0, 0, 0.75),
+                inset 0 0 30px rgba(0, 0, 0, 0.35);
         }
-        .story-text { font-style: italic; line-height: 1.6; color: var(--gold); margin-bottom: 20px; font-size: 0.95rem; text-align: justify; }
-        .rule-list { text-align: left; font-size: 0.85rem; margin-bottom: 20px; color: #ccc; }
-        .rule-list li { margin-bottom: 8px; }
 
-        .game-wrapper { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; width: 100%; max-width: 1100px; }
-        .side-panel { flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 10px; }
-        .main-panel { 
-            flex: 1.5; min-width: 320px; background: #111; border: 2px solid #333;
-            border-radius: 15px; padding: 15px; text-align: center; position: relative;
-            box-shadow: inset 0 0 30px #000; transition: transform 0.1s;
+        .story-text {
+            font-style: italic;
+
+            line-height: 1.7;
+
+            color: var(--gold-light);
+
+            margin-bottom: 20px;
+
+            font-size: 0.95rem;
+
+            text-align: justify;
         }
-        .log-panel { 
-            flex: 1; min-width: 280px; background: rgba(0,0,0,0.8); border-left: 3px solid var(--red);
-            height: 500px; overflow-y: auto; padding: 10px; font-size: 0.85rem; font-style: italic;
+
+        .rule-list {
+            text-align: left;
+
+            font-size: 0.85rem;
+
+            margin-bottom: 20px;
+
+            color: var(--text);
         }
 
-        .box { background: #1a0000; border: 1px solid var(--red); padding: 12px; border-radius: 8px; }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.9rem; }
-        .total-pwr { grid-column: span 2; font-size: 1.6rem; color: #ff4444; border-top: 1px solid #444; margin-top: 5px; padding-top: 5px; text-align: center; font-weight: bold; }
+        .rule-list li {
+            margin-bottom: 9px;
 
-        .battery-stack { display: flex; flex-direction: column-reverse; gap: 3px; height: 150px; border: 2px solid #333; padding: 3px; border-radius: 5px; background: #000; }
-        .battery-cell { height: 12px; background: #222; transition: all 0.3s; border-radius: 2px; }
-        .battery-cell.active { background: var(--green); box-shadow: 0 0 8px var(--green); }
-        .battery-cell.boss-level { background: var(--red); }
+            line-height: 1.45;
+        }
 
-        .card { border: 1px solid #666; padding: 20px; margin: 10px auto; background: #222; width: 95%; max-width: 280px; border-radius: 12px; }
-        .monster-icon { font-size: 4rem; margin: 10px 0; display: block; }
-        .card.boss { border: 3px solid #ff0000; box-shadow: 0 0 25px var(--red); background: linear-gradient(180deg, #200 0%, #111 100%); }
-        .card.trap { border-color: var(--purple); }
-        
-        button { background: var(--red); color: white; border: none; padding: 12px; cursor: pointer; font-weight: bold; border-radius: 5px; width: 100%; text-transform: uppercase; }
-        button:hover { background: #ff0000; }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; background: #000; color: #fff; border: 1px solid var(--red); border-radius: 5px; }
+        /* =========================
+           GAME LAYOUT
+        ========================= */
 
-        #dice-roll { font-size: 3.5rem; font-weight: bold; color: gold; margin: 10px; display: none; }
-        .inv-slot { display: inline-block; background: #333; padding: 4px 8px; margin: 2px; border-radius: 4px; font-size: 0.75rem; border: 1px solid #555; }
-        
-        .shake { animation: shakeAnim 0.3s; }
-        @keyframes shakeAnim { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-10px);} 75% {transform: translateX(10px);} }
+        .game-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+
+            gap: 15px;
+
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .side-panel {
+            flex: 1;
+
+            min-width: 280px;
+
+            display: flex;
+            flex-direction: column;
+
+            gap: 10px;
+        }
+
+        /* =========================
+           MAIN PANEL
+        ========================= */
+
+        .main-panel {
+            flex: 1.5;
+
+            min-width: 320px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #151c27,
+                    #0d121a
+                );
+
+            border: 2px solid var(--border-light);
+
+            border-radius: 15px;
+
+            padding: 15px;
+
+            text-align: center;
+
+            position: relative;
+
+            box-shadow:
+                0 10px 30px rgba(0, 0, 0, 0.7),
+                inset 0 0 30px rgba(0, 0, 0, 0.5);
+
+            transition: transform 0.1s;
+        }
+
+        /* =========================
+           LOG
+        ========================= */
+
+        .log-panel {
+            flex: 1;
+
+            min-width: 280px;
+
+            background: #0d131b;
+
+            border-left: 3px solid var(--red);
+
+            border-top: 1px solid var(--border);
+
+            border-right: 1px solid var(--border);
+
+            border-bottom: 1px solid var(--border);
+
+            height: 500px;
+
+            overflow-y: auto;
+
+            padding: 10px;
+
+            font-size: 0.85rem;
+
+            font-style: italic;
+
+            color: #cbd2db;
+
+            box-shadow:
+                inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        /* =========================
+           BOXES
+        ========================= */
+
+        .box {
+            background:
+                linear-gradient(
+                    145deg,
+                    #18202c,
+                    #10161f
+                );
+
+            border: 1px solid var(--border-light);
+
+            padding: 12px;
+
+            border-radius: 8px;
+
+            box-shadow:
+                0 5px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .stats-grid {
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 5px;
+
+            font-size: 0.9rem;
+
+            color: var(--text);
+        }
+
+        .total-pwr {
+            grid-column: span 2;
+
+            font-size: 1.7rem;
+
+            color: var(--red-glow);
+
+            border-top: 1px solid var(--border);
+
+            margin-top: 5px;
+
+            padding-top: 8px;
+
+            text-align: center;
+
+            font-weight: bold;
+
+            text-shadow:
+                0 0 10px rgba(255, 59, 77, 0.4);
+        }
+
+        /* =========================
+           BATTERY
+        ========================= */
+
+        .battery-stack {
+            display: flex;
+
+            flex-direction: column-reverse;
+
+            gap: 3px;
+
+            height: 150px;
+
+            border: 2px solid var(--border);
+
+            padding: 3px;
+
+            border-radius: 5px;
+
+            background: #05070a;
+
+            box-shadow:
+                inset 0 0 15px rgba(0, 0, 0, 0.8);
+        }
+
+        .battery-cell {
+            height: 12px;
+
+            background: #1c2530;
+
+            transition: all 0.3s;
+
+            border-radius: 2px;
+        }
+
+        .battery-cell.active {
+            background: var(--green);
+
+            box-shadow:
+                0 0 8px var(--green),
+                0 0 15px rgba(57, 217, 138, 0.3);
+        }
+
+        .battery-cell.boss-level {
+            background: var(--red-dark);
+        }
+
+        .battery-cell.boss-level.active {
+            background: var(--red);
+
+            box-shadow:
+                0 0 10px var(--red-glow),
+                0 0 20px rgba(255, 59, 77, 0.35);
+        }
+
+        /* =========================
+           CARDS
+        ========================= */
+
+        .card {
+            border: 1px solid var(--border-light);
+
+            padding: 20px;
+
+            margin: 10px auto;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #202936,
+                    #121820
+                );
+
+            color: var(--text);
+
+            width: 95%;
+
+            max-width: 280px;
+
+            border-radius: 12px;
+
+            box-shadow:
+                0 8px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .monster-icon {
+            font-size: 4rem;
+
+            margin: 10px 0;
+
+            display: block;
+        }
+
+        .card.boss {
+            border: 3px solid var(--red);
+
+            box-shadow:
+                0 0 15px rgba(214, 40, 57, 0.5),
+                0 0 35px rgba(143, 22, 36, 0.3);
+
+            background:
+                linear-gradient(
+                    180deg,
+                    #3a1118 0%,
+                    #171016 55%,
+                    #0d1117 100%
+                );
+        }
+
+        .card.trap {
+            border: 2px solid var(--purple);
+
+            box-shadow:
+                0 0 20px rgba(181, 108, 255, 0.25);
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #261936,
+                    #14101d
+                );
+        }
+
+        /* =========================
+           BUTTONS
+        ========================= */
+
+        button {
+            background:
+                linear-gradient(
+                    180deg,
+                    #d62839,
+                    #941725
+                );
+
+            color: #fff;
+
+            border: 1px solid #ef5361;
+
+            padding: 12px;
+
+            cursor: pointer;
+
+            font-weight: bold;
+
+            border-radius: 6px;
+
+            width: 100%;
+
+            text-transform: uppercase;
+
+            box-shadow:
+                0 4px 10px rgba(0, 0, 0, 0.4);
+
+            transition:
+                background 0.2s,
+                transform 0.1s,
+                box-shadow 0.2s;
+        }
+
+        button:hover {
+            background:
+                linear-gradient(
+                    180deg,
+                    #ef3d4f,
+                    #b51d2d
+                );
+
+            box-shadow:
+                0 0 15px rgba(214, 40, 57, 0.4);
+
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        #btn-run {
+            background:
+                linear-gradient(
+                    180deg,
+                    #3c4b5f,
+                    #263342
+                ) !important;
+
+            border-color: #5b6d82;
+        }
+
+        #btn-run:hover {
+            background:
+                linear-gradient(
+                    180deg,
+                    #53677e,
+                    #344558
+                ) !important;
+        }
+
+        /* =========================
+           INPUT
+        ========================= */
+
+        input {
+            width: 100%;
+
+            padding: 12px;
+
+            margin-bottom: 15px;
+
+            background: #070a0f;
+
+            color: #fff;
+
+            border: 1px solid var(--border-light);
+
+            border-radius: 5px;
+
+            outline: none;
+
+            transition:
+                border 0.2s,
+                box-shadow 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--gold);
+
+            box-shadow:
+                0 0 10px rgba(245, 200, 76, 0.2);
+        }
+
+        input::placeholder {
+            color: #6f7b89;
+        }
+
+        /* =========================
+           DICE
+        ========================= */
+
+        #dice-roll {
+            font-size: 3.5rem;
+
+            font-weight: bold;
+
+            color: var(--gold-light);
+
+            margin: 10px;
+
+            display: none;
+
+            text-shadow:
+                0 0 15px rgba(245, 200, 76, 0.5);
+        }
+
+        /* =========================
+           INVENTORY
+        ========================= */
+
+        .inv-slot {
+            display: inline-block;
+
+            background: #202a38;
+
+            color: var(--gold-light);
+
+            padding: 6px 9px;
+
+            margin: 3px;
+
+            border-radius: 5px;
+
+            font-size: 0.75rem;
+
+            border: 1px solid #405066;
+
+            box-shadow:
+                inset 0 0 8px rgba(0, 0, 0, 0.4);
+        }
+
+        /* =========================
+           SHAKE
+        ========================= */
+
+        .shake {
+            animation: shakeAnim 0.3s;
+        }
+
+        @keyframes shakeAnim {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+
+        }
+
+        /* =========================
+           SCROLLBAR
+        ========================= */
+
+        .log-panel::-webkit-scrollbar {
+            width: 7px;
+        }
+
+        .log-panel::-webkit-scrollbar-track {
+            background: #080b10;
+        }
+
+        .log-panel::-webkit-scrollbar-thumb {
+            background: #344052;
+            border-radius: 10px;
+        }
+
+        .log-panel::-webkit-scrollbar-thumb:hover {
+            background: #4c5a6d;
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
 
         @media (max-width: 768px) {
-            .game-wrapper { flex-direction: column; }
-            .log-panel { height: 180px; order: 3; }
-            .battery-stack { flex-direction: row; height: 30px; }
-            .battery-cell { flex: 1; height: 100%; }
+
+            .game-wrapper {
+                flex-direction: column;
+            }
+
+            .log-panel {
+                height: 180px;
+                order: 3;
+            }
+
+            .battery-stack {
+                flex-direction: row;
+                height: 30px;
+            }
+
+            .battery-cell {
+                flex: 1;
+                height: 100%;
+            }
+
         }
     </style>
 </head>
+
+
 <body>
 
-    <audio id="bgm" loop src="https://www.chosic.com/wp-content/uploads/2021/07/The-Old-Tower-Inn.mp3"></audio>
-    <audio id="sfx-door" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3"></audio>
-    <audio id="sfx-sword" src="https://assets.mixkit.co/active_storage/sfx/2047/2047-preview.mp3"></audio>
-    <audio id="sfx-dice" src="https://assets.mixkit.co/active_storage/sfx/1070/1070-preview.mp3"></audio>
-    <audio id="sfx-item" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3"></audio>
-    <audio id="sfx-trap" src="https://assets.mixkit.co/active_storage/sfx/2658/2658-preview.mp3"></audio>
-    <audio id="sfx-death" src="https://assets.mixkit.co/active_storage/sfx/2533/2533-preview.mp3"></audio>
-    <audio id="sfx-win" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
+    <!-- =========================
+         AUDIO
+    ========================= -->
+
+    <audio
+        id="bgm"
+        loop
+        src="https://www.chosic.com/wp-content/uploads/2021/07/The-Old-Tower-Inn.mp3">
+    </audio>
+
+    <audio
+        id="sfx-door"
+        src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3">
+    </audio>
+
+    <audio
+        id="sfx-sword"
+        src="https://assets.mixkit.co/active_storage/sfx/2047/2047-preview.mp3">
+    </audio>
+
+    <audio
+        id="sfx-dice"
+        src="https://assets.mixkit.co/active_storage/sfx/1070/1070-preview.mp3">
+    </audio>
+
+    <audio
+        id="sfx-item"
+        src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3">
+    </audio>
+
+    <audio
+        id="sfx-trap"
+        src="https://assets.mixkit.co/active_storage/sfx/2658/2658-preview.mp3">
+    </audio>
+
+    <audio
+        id="sfx-death"
+        src="https://assets.mixkit.co/active_storage/sfx/2533/2533-preview.mp3">
+    </audio>
+
+    <audio
+        id="sfx-win"
+        src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3">
+    </audio>
+
+
+    <!-- =========================
+         TITLE
+    ========================= -->
 
     <h1>💀 MUNCHING 💀</h1>
 
-    <div id="story-screen" class="overlay-screen">
+
+    <!-- =========================
+         STORY SCREEN
+    ========================= -->
+
+    <div
+        id="story-screen"
+        class="overlay-screen"
+    >
+
         <h3>Once Upon a Time...</h3>
+
         <p class="story-text">
-            The world has fallen into ruin. You are an adventurer who has come to challenge Lord Munching, the monster who rules over the world. You intend to enter his tower and slay Lord Munching. You must fight your way from Floor 1 all the way to Floor 10.
+
+            The world has fallen into ruin.
+
+            You are an adventurer who has come to
+            challenge Lord Munching, the monster
+            who rules over the world.
+
+            You intend to enter his tower and slay
+            Lord Munching.
+
+            You must fight your way from Floor 1
+            all the way to Floor 10.
+
         </p>
-        <button onclick="showSetup()">CONTINUE</button>
+
+        <button onclick="showSetup()">
+            CONTINUE
+        </button>
+
     </div>
 
-    <div id="setup-screen" class="overlay-screen" style="display:none;">
+
+    <!-- =========================
+         SETUP SCREEN
+    ========================= -->
+
+    <div
+        id="setup-screen"
+        class="overlay-screen"
+        style="display:none;"
+    >
+
         <h3>Tower Rules</h3>
+
         <ul class="rule-list">
-            <li>⚔️ <b>Enemies:</b> Defeat enemies by having ATK equal to or higher than their Power.</li>
-            <li>❌ <b>Defeat:</b> Fall down <b>2 Floors</b>.</li>
-            <li>🌀 <b>Traps:</b> Watch out for <b>deadly traps</b>.</li>
-            <li>💀 <b>Death:</b> If your level falls to <b>0</b>, the game is over.</li>
-            <li>⚖️ <b>Balance:</b> Monsters, Traps, and Items have an equal chance (33%).</li>
+
+            <li>
+                ⚔️ <b>Enemies:</b>
+                Defeat enemies by having ATK equal
+                to or higher than their Power.
+            </li>
+
+            <li>
+                ❌ <b>Defeat:</b>
+                Fall down <b>2 Floors</b>.
+            </li>
+
+            <li>
+                🌀 <b>Traps:</b>
+                Watch out for <b>deadly traps</b>.
+            </li>
+
+            <li>
+                💀 <b>Death:</b>
+                If your level falls to <b>0</b>,
+                the game is over.
+            </li>
+
+            <li>
+                ⚖️ <b>Balance:</b>
+                Monsters, Traps, and Items have
+                an equal chance (33%).
+            </li>
+
+            <li>
+                🏃 <b>Run:</b>
+                Roll <b>1–2</b> to fall 2 floors,
+                <b>3–4</b> to escape and lose
+                1 random equipment,
+                or <b>5–6</b> to escape safely.
+            </li>
+
         </ul>
-        <input type="text" id="playerName" placeholder="Enter your name..." maxlength="12">
-        <button onclick="startGame()">ENTER THE TOWER</button>
+
+
+        <input
+            type="text"
+            id="playerName"
+            placeholder="Enter your name..."
+            maxlength="12"
+        >
+
+
+        <button onclick="startGame()">
+            ENTER THE TOWER
+        </button>
+
     </div>
 
-    <div id="game-ui" class="game-wrapper" style="display:none;">
+
+    <!-- =========================
+         GAME UI
+    ========================= -->
+
+    <div
+        id="game-ui"
+        class="game-wrapper"
+        style="display:none;"
+    >
+
+        <!-- =========================
+             LEFT PANEL
+        ========================= -->
+
         <div class="side-panel">
+
+
+            <!-- STATS -->
+
             <div class="box">
+
                 <div class="stats-grid">
-                    <div>👤 <span id="disp-name"></span></div>
-                    <div style="color:var(--gold); text-align: right;">⭐ Lvl: <span id="disp-lvl"></span></div>
-                    <div style="grid-column: span 2; font-size: 0.75rem; color: #aaa; border-bottom: 1px solid #444; padding: 5px 0;">
-                        📜 <span id="disp-race-info"></span>
+
+                    <div>
+                        👤
+                        <span id="disp-name"></span>
                     </div>
-                    <div class="total-pwr">ATK: <span id="disp-total"></span></div>
+
+                    <div
+                        style="
+                            color:var(--gold);
+                            text-align:right;
+                        "
+                    >
+                        ⭐ Lvl:
+                        <span id="disp-lvl"></span>
+                    </div>
+
+
+                    <div
+                        style="
+                            grid-column:span 2;
+                            font-size:0.75rem;
+                            color:var(--text-muted);
+                            border-bottom:1px solid var(--border);
+                            padding:5px 0;
+                        "
+                    >
+                        📜
+                        <span id="disp-race-info"></span>
+                    </div>
+
+
+                    <div class="total-pwr">
+
+                        ATK:
+                        <span id="disp-total"></span>
+
+                    </div>
+
                 </div>
+
             </div>
 
-            <div class="box" style="background: #111;">
-                <strong>🎒 Inventory (Max 5)</strong>
-                <div id="inv-list" style="margin-top:8px; min-height: 40px;"></div>
+
+            <!-- INVENTORY -->
+
+            <div
+                class="box"
+                style="background:#10161f;"
+            >
+
+                <strong>
+                    🎒 Inventory (Max 5)
+                </strong>
+
+                <div
+                    id="inv-list"
+                    style="
+                        margin-top:8px;
+                        min-height:40px;
+                    "
+                ></div>
+
             </div>
+
+
+            <!-- FLOOR BATTERY -->
 
             <div class="battery-container">
-                <div id="battery-stack" class="battery-stack"></div>
+
+                <div
+                    id="battery-stack"
+                    class="battery-stack"
+                ></div>
+
             </div>
+
         </div>
 
-        <div class="main-panel" id="main-panel">
-            <div id="narration-text" style="color:var(--gold); font-style: italic; min-height: 50px; font-size: 0.95rem;">
+
+        <!-- =========================
+             MAIN PANEL
+        ========================= -->
+
+        <div
+            class="main-panel"
+            id="main-panel"
+        >
+
+            <div
+                id="narration-text"
+                style="
+                    color:var(--gold-light);
+                    font-style:italic;
+                    min-height:50px;
+                    font-size:0.95rem;
+                "
+            >
                 Entering the next floor...
             </div>
 
-            <div id="dice-roll">🎲 0</div>
+
+            <!-- DICE -->
+
+            <div id="dice-roll">
+                🎲 0
+            </div>
+
+
+            <!-- ARENA -->
+
             <div id="arena-slot"></div>
 
+
+            <!-- EXPLORE -->
+
             <div id="action-btns">
-                <button onclick="explore()">EXPLORE</button>
+
+                <button onclick="explore()">
+                    EXPLORE
+                </button>
+
             </div>
 
-            <div id="combat-btns" style="display:none;">
-                <button onclick="fight()" style="background:var(--red);">FIGHT!</button>
-                <button id="btn-run" onclick="attemptRun()" style="background:#444; margin-top:10px;">RUN</button>
+
+            <!-- COMBAT -->
+
+            <div
+                id="combat-btns"
+                style="display:none;"
+            >
+
+                <button
+                    onclick="fight()"
+                    style="
+                        background:
+                        linear-gradient(
+                            180deg,
+                            #d62839,
+                            #941725
+                        );
+                    "
+                >
+                    ⚔️ FIGHT!
+                </button>
+
+
+                <button
+                    id="btn-run"
+                    onclick="attemptRun()"
+                    style="margin-top:10px;"
+                >
+                    🏃 RUN
+                </button>
+
             </div>
 
-            <div id="replace-ui" style="display:none;">
+
+            <!-- ITEM REPLACEMENT -->
+
+            <div
+                id="replace-ui"
+                style="display:none;"
+            >
+
                 <div id="replace-options"></div>
-                <button onclick="cancelItem()" style="background:#333; margin-top:10px;">DISCARD ITEM</button>
+
+
+                <button
+                    onclick="cancelItem()"
+                    style="
+                        background:
+                        linear-gradient(
+                            180deg,
+                            #3c4b5f,
+                            #263342
+                        );
+
+                        margin-top:10px;
+                    "
+                >
+                    DISCARD ITEM
+                </button>
+
             </div>
+
         </div>
 
-        <div class="log-panel" id="game-log"></div>
+
+        <!-- =========================
+             LOG PANEL
+        ========================= -->
+
+        <div
+            class="log-panel"
+            id="game-log"
+        ></div>
+
     </div>
 
+
 <script>
+
+    /* =====================================================
+       RACES
+    ===================================================== */
+
     const races = {
-        "Orc": { pwr: 3, bonus: "+3 Base ATK", ico: "🐗" },
-        "Elf": { pwr: 1, bonus: "+1 Run & +1 Base ATK", ico: "🧝" },
-        "Dwarf": { pwr: 1, bonus: "+1 Item Bonus & +1 Base ATK", ico: "🧔" },
-        "Human": { pwr: 2, bonus: "+2 Base ATK", ico: "👤" }
+
+        "Orc": {
+            pwr: 3,
+            bonus: "+3 Base ATK",
+            ico: "🐗"
+        },
+
+        "Elf": {
+            pwr: 1,
+            bonus: "+1 Run & +1 Base ATK",
+            ico: "🧝"
+        },
+
+        "Dwarf": {
+            pwr: 1,
+            bonus: "+1 Item Bonus & +1 Base ATK",
+            ico: "🧔"
+        },
+
+        "Human": {
+            pwr: 2,
+            bonus: "+2 Base ATK",
+            ico: "👤"
+        }
+
     };
 
+
+    /* =====================================================
+       MONSTERS
+    ===================================================== */
+
     const monsterData = [
-        {n: "Green Slime", i: "🧪"},
-        {n: "Skeleton Archer", i: "💀"},
-        {n: "Starving Zombie", i: "🧟"},
-        {n: "Shadow Wraith", i: "👻"},
-        {n: "Furious Orc", i: "👹"},
-        {n: "Savage Mimic", i: "📦"},
-        {n: "Dark Cultist", i: "🧙"}
+
+        {
+            n: "Green Slime",
+            i: "🧪"
+        },
+
+        {
+            n: "Skeleton Archer",
+            i: "💀"
+        },
+
+        {
+            n: "Starving Zombie",
+            i: "🧟"
+        },
+
+        {
+            n: "Shadow Wraith",
+            i: "👻"
+        },
+
+        {
+            n: "Furious Orc",
+            i: "👹"
+        },
+
+        {
+            n: "Savage Mimic",
+            i: "📦"
+        },
+
+        {
+            n: "Dark Cultist",
+            i: "🧙"
+        }
+
     ];
+
+
+    /* =====================================================
+       ITEMS
+    ===================================================== */
 
     const items = [
-        {n: "Rusty Dagger", p: 1},
-        {n: "Wooden Shield", p: 2},
-        {n: "Fire Ring", p: 3},
-        {n: "Battle Axe", p: 5},
-        {n: "Iron Armor", p: 4},
-        {n: "Silver Sword", p: 4}
+
+        {
+            n: "Rusty Dagger",
+            p: 1
+        },
+
+        {
+            n: "Wooden Shield",
+            p: 2
+        },
+
+        {
+            n: "Fire Ring",
+            p: 3
+        },
+
+        {
+            n: "Battle Axe",
+            p: 5
+        },
+
+        {
+            n: "Iron Armor",
+            p: 4
+        },
+
+        {
+            n: "Silver Sword",
+            p: 4
+        }
+
     ];
 
+
+    /* =====================================================
+       TRAPS
+    ===================================================== */
+
     const traps = [
+
         {
             n: "Arrow Trap",
             e: "lvl",
             m: "An arrow shoots from the wall! Level -1.",
             i: "🏹"
         },
+
         {
             n: "Void Portal",
             e: "reset",
             m: "The portal sucks you back to Floor 1!",
             i: "🌀"
         },
+
         {
             n: "Shadow Thief",
             e: "item",
             m: "An item has been stolen!",
             i: "👤"
         }
+
     ];
 
+
+    /* =====================================================
+       PLAYER
+    ===================================================== */
+
     let p = {
+
         name: "",
+
         race: "",
+
         lvl: 1,
+
         basePwr: 0,
+
         inv: []
+
     };
 
+
     let currentCard = null;
+
     let pendingItem = null;
+
     let isDead = false;
 
+
+    /* =====================================================
+       SOUND
+    ===================================================== */
+
     function playSfx(id) {
-        const sound = document.getElementById(id);
+
+        const sound =
+            document.getElementById(id);
+
         if (sound) {
+
             sound.currentTime = 0;
+
             sound.play().catch(e => {});
+
         }
+
     }
+
+
+    /* =====================================================
+       SHAKE
+    ===================================================== */
 
     function triggerShake() {
-        const pnl = document.getElementById('main-panel');
+
+        const pnl =
+            document.getElementById(
+                'main-panel'
+            );
+
         pnl.classList.add('shake');
-        setTimeout(() => pnl.classList.remove('shake'), 300);
-    }
-
-    function showSetup() {
-        document.getElementById('story-screen').style.display = 'none';
-        document.getElementById('setup-screen').style.display = 'block';
-    }
-
-    function startGame() {
-        p.name = document.getElementById('playerName').value || "Slayer";
-
-        p.race = Object.keys(races)[Math.floor(Math.random() * 4)];
-        p.basePwr = races[p.race].pwr;
-
-        document.getElementById('bgm').volume = 0.3;
-        document.getElementById('bgm').play();
-
-        document.getElementById('setup-screen').style.display = 'none';
-        document.getElementById('game-ui').style.display = 'flex';
-
-        initBattery();
-        updateUI();
-
-        log(`Game started: ${p.name} the ${p.race}`);
-    }
-
-    function initBattery() {
-        const stack = document.getElementById('battery-stack');
-        stack.innerHTML = '';
-
-        for (let i = 1; i <= 10; i++) {
-            let cell = document.createElement('div');
-
-            cell.className = 'battery-cell';
-            cell.id = `cell-${i}`;
-
-            if ([3, 6, 10].includes(i)) {
-                cell.classList.add('boss-level');
-            }
-
-            stack.appendChild(cell);
-        }
-    }
-
-    function explore() {
-        if (isDead) return;
-
-        playSfx('sfx-door');
-
-        document.getElementById('action-btns').style.display = 'none';
-
-        let slot = document.getElementById('arena-slot');
-        let nar = document.getElementById('narration-text');
-
-        if ([3, 6, 10].includes(p.lvl)) {
-
-            const bosses = {
-                3: {l: 9, n: "GORGON", i: "🐍"},
-                6: {l: 18, n: "DEMON KNIGHT", i: "⚔️"},
-                10: {l: 28, n: "LORD MUNCHING", i: "👿"}
-            };
-
-            let b = bosses[p.lvl];
-
-            currentCard = {
-                ...b,
-                type: "boss"
-            };
-
-            nar.innerText = "The dark aura grows stronger...";
-
-            slot.innerHTML = `
-                <div class="card boss">
-                    <span class="monster-icon">${b.i}</span>
-                    <b>${b.n}</b><br>
-                    POWER: ${b.l}
-                </div>
-            `;
-
-            document.getElementById('combat-btns').style.display = 'block';
-
-        } else {
-
-            let rng = Math.random();
-
-            if (rng < 0.33) {
-
-                let t = traps[Math.floor(Math.random() * traps.length)];
-
-                currentCard = {
-                    ...t,
-                    type: "trap"
-                };
-
-                nar.innerText = "Sudden danger!";
-
-                slot.innerHTML = `
-                    <div class="card trap">
-                        <span class="monster-icon">${t.i}</span>
-                        <b>${t.n}</b><br>
-                        ${t.m}
-                    </div>
-                `;
-
-                applyTrap(t);
-
-            } else if (rng < 0.66) {
-
-                let m = monsterData[Math.floor(Math.random() * monsterData.length)];
-
-                let dp = p.lvl + Math.floor(Math.random() * 3) + 1;
-
-                currentCard = {
-                    n: m.n,
-                    l: dp,
-                    i: m.i,
-                    type: "monster"
-                };
-
-                nar.innerText = "Something is approaching!";
-
-                slot.innerHTML = `
-                    <div class="card">
-                        <span class="monster-icon">${m.i}</span>
-                        <b>${currentCard.n}</b><br>
-                        POWER: ${currentCard.l}
-                    </div>
-                `;
-
-                document.getElementById('combat-btns').style.display = 'block';
-
-            } else {
-
-                let iBase = items[Math.floor(Math.random() * items.length)];
-
-                pendingItem = {
-                    n: iBase.n,
-                    p: iBase.p + (p.lvl > 5 ? 1 : 0)
-                };
-
-                nar.innerText = "Treasure found!";
-
-                slot.innerHTML = `
-                    <div class="card" style="border-color:gold">
-                        <span class="monster-icon">💰</span>
-                        <b>${pendingItem.n}</b><br>
-                        +${pendingItem.p} ATK
-                    </div>
-                `;
-
-                handleItemAcquisition();
-            }
-        }
-    }
-
-    function fight() {
-        playSfx('sfx-sword');
-
-        let tp = calculateTotalPower();
-
-        if (tp >= currentCard.l) {
-
-            log(`✅ Victory! You defeated ${currentCard.n}.`);
-
-            p.lvl++;
-
-            if (p.lvl > 10) {
-                win();
-            } else {
-                nextTurn();
-            }
-
-        } else {
-
-            triggerShake();
-
-            log(`
-                <span style="color:#ff4444">
-                    ❌ Defeated! You are thrown down 2 floors.
-                </span>
-            `);
-
-            p.lvl -= 2;
-
-            updateUI();
-
-            if (p.lvl < 1) {
-                checkDeath(`Defeated in a duel against ${currentCard.n}.`);
-            } else {
-                nextTurn();
-            }
-        }
-    }
-
-    function attemptRun() {
-        playSfx('sfx-dice');
-
-        const rollDisplay = document.getElementById('dice-roll');
-
-        rollDisplay.style.display = 'block';
-
-        let roll = Math.floor(Math.random() * 6) + 1;
-
-        if (p.race === "Elf") {
-            roll += 1;
-        }
-
-        rollDisplay.innerText = "🎲 " + (roll > 6 ? 6 : roll);
 
         setTimeout(() => {
 
-            rollDisplay.style.display = 'none';
+            pnl.classList.remove('shake');
 
-            if (roll <= 2) {
+        }, 300);
 
-                triggerShake();
-
-                log(`
-                    <span style="color:#ff4444">
-                        FAILED TO ESCAPE! Level -1.
-                    </span>
-                `);
-
-                p.lvl -= 1;
-
-                updateUI();
-
-                if (p.lvl < 1) {
-                    checkDeath("You died while trying to escape.");
-                } else {
-                    nextTurn();
-                }
-
-            } else if (roll <= 4) {
-
-                log("You escaped, but lost an item.");
-
-                if (p.inv.length > 0) {
-                    p.inv.pop();
-                }
-
-                nextTurn();
-
-            } else {
-
-                log("You escaped safely!");
-
-                nextTurn();
-            }
-
-        }, 700);
     }
 
-    function applyTrap(t) {
-        playSfx('sfx-trap');
-        triggerShake();
 
-        log(`
-            <span style="color:var(--purple); font-weight:bold;">
-                ⚠️ TRAPPED: ${t.m}
-            </span>
-        `);
+    /* =====================================================
+       SETUP
+    ===================================================== */
 
-        if (t.e === "lvl") {
-            p.lvl -= 1;
-        }
+    function showSetup() {
 
-        if (t.e === "reset") {
-            p.lvl = 1;
-        }
+        document.getElementById(
+            'story-screen'
+        ).style.display = 'none';
 
-        if (t.e === "item" && p.inv.length > 0) {
-            p.inv.pop();
-        }
+
+        document.getElementById(
+            'setup-screen'
+        ).style.display = 'block';
+
+    }
+
+
+    /* =====================================================
+       START GAME
+    ===================================================== */
+
+    function startGame() {
+
+        p.name =
+            document.getElementById(
+                'playerName'
+            ).value || "Slayer";
+
+
+        p.race =
+            Object.keys(races)
+                [
+                    Math.floor(
+                        Math.random() * 4
+                    )
+                ];
+
+
+        p.basePwr =
+            races[p.race].pwr;
+
+
+        const bgm =
+            document.getElementById('bgm');
+
+        bgm.volume = 0.3;
+
+        bgm.play().catch(e => {});
+
+
+        document.getElementById(
+            'setup-screen'
+        ).style.display = 'none';
+
+
+        document.getElementById(
+            'game-ui'
+        ).style.display = 'flex';
+
+
+        initBattery();
 
         updateUI();
 
-        if (p.lvl < 1) {
-            checkDeath(`Killed by ${t.n}.`);
-        } else {
-            setTimeout(nextTurn, 1800);
-        }
+
+        log(
+            `Game started: ${p.name} the ${p.race}`
+        );
+
     }
+
+
+    /* =====================================================
+       BATTERY
+    ===================================================== */
+
+    function initBattery() {
+
+        const stack =
+            document.getElementById(
+                'battery-stack'
+            );
+
+
+        stack.innerHTML = '';
+
+
+        for (
+            let i = 1;
+            i <= 10;
+            i++
+        ) {
+
+            let cell =
+                document.createElement('div');
+
+
+            cell.className =
+                'battery-cell';
+
+
+            cell.id =
+                `cell-${i}`;
+
+
+            if (
+                [3, 6, 10].includes(i)
+            ) {
+
+                cell.classList.add(
+                    'boss-level'
+                );
+
+            }
+
+
+            stack.appendChild(cell);
+
+        }
+
+    }
+
+
+    /* =====================================================
+       EXPLORE
+    ===================================================== */
+
+    function explore() {
+
+        if (isDead) return;
+
+
+        playSfx('sfx-door');
+
+
+        document.getElementById(
+            'action-btns'
+        ).style.display = 'none';
+
+
+        let slot =
+            document.getElementById(
+                'arena-slot'
+            );
+
+
+        let nar =
+            document.getElementById(
+                'narration-text'
+            );
+
+
+        /* =================================================
+           BOSS FLOORS
+        ================================================= */
+
+        if (
+            [3, 6, 10].includes(p.lvl)
+        ) {
+
+            const bosses = {
+
+                3: {
+                    l: 9,
+                    n: "GORGON",
+                    i: "🐍"
+                },
+
+                6: {
+                    l: 18,
+                    n: "DEMON KNIGHT",
+                    i: "⚔️"
+                },
+
+                10: {
+                    l: 28,
+                    n: "LORD MUNCHING",
+                    i: "👿"
+                }
+
+            };
+
+
+            let b =
+                bosses[p.lvl];
+
+
+            currentCard = {
+
+                ...b,
+
+                type: "boss"
+
+            };
+
+
+            nar.innerText =
+                "The dark aura grows stronger...";
+
+
+            slot.innerHTML = `
+
+                <div class="card boss">
+
+                    <span class="monster-icon">
+                        ${b.i}
+                    </span>
+
+                    <b>${b.n}</b>
+
+                    <br>
+
+                    POWER: ${b.l}
+
+                </div>
+
+            `;
+
+
+            document.getElementById(
+                'combat-btns'
+            ).style.display = 'block';
+
+        }
+
+
+        /* =================================================
+           NORMAL FLOOR
+        ================================================= */
+
+        else {
+
+            let rng =
+                Math.random();
+
+
+            /* =========================
+               TRAP
+            ========================= */
+
+            if (rng < 0.33) {
+
+                let t =
+                    traps[
+                        Math.floor(
+                            Math.random() *
+                            traps.length
+                        )
+                    ];
+
+
+                currentCard = {
+
+                    ...t,
+
+                    type: "trap"
+
+                };
+
+
+                nar.innerText =
+                    "Sudden danger!";
+
+
+                slot.innerHTML = `
+
+                    <div class="card trap">
+
+                        <span class="monster-icon">
+                            ${t.i}
+                        </span>
+
+                        <b>${t.n}</b>
+
+                        <br>
+
+                        ${t.m}
+
+                    </div>
+
+                `;
+
+
+                applyTrap(t);
+
+            }
+
+
+            /* =========================
+               MONSTER
+            ========================= */
+
+            else if (rng < 0.66) {
+
+                let m =
+                    monsterData[
+                        Math.floor(
+                            Math.random() *
+                            monsterData.length
+                        )
+                    ];
+
+
+                let dp =
+                    p.lvl +
+                    Math.floor(
+                        Math.random() * 3
+                    ) +
+                    1;
+
+
+                currentCard = {
+
+                    n: m.n,
+
+                    l: dp,
+
+                    i: m.i,
+
+                    type: "monster"
+
+                };
+
+
+                nar.innerText =
+                    "Something is approaching!";
+
+
+                slot.innerHTML = `
+
+                    <div class="card">
+
+                        <span class="monster-icon">
+                            ${m.i}
+                        </span>
+
+                        <b>
+                            ${currentCard.n}
+                        </b>
+
+                        <br>
+
+                        POWER:
+                        ${currentCard.l}
+
+                    </div>
+
+                `;
+
+
+                document.getElementById(
+                    'combat-btns'
+                ).style.display = 'block';
+
+            }
+
+
+            /* =========================
+               ITEM
+            ========================= */
+
+            else {
+
+                let iBase =
+                    items[
+                        Math.floor(
+                            Math.random() *
+                            items.length
+                        )
+                    ];
+
+
+                pendingItem = {
+
+                    n: iBase.n,
+
+                    p:
+                        iBase.p +
+                        (
+                            p.lvl > 5
+                                ? 1
+                                : 0
+                        )
+
+                };
+
+
+                nar.innerText =
+                    "Treasure found!";
+
+
+                slot.innerHTML = `
+
+                    <div
+                        class="card"
+                        style="border-color:var(--gold);"
+                    >
+
+                        <span class="monster-icon">
+                            💰
+                        </span>
+
+                        <b>
+                            ${pendingItem.n}
+                        </b>
+
+                        <br>
+
+                        +${pendingItem.p} ATK
+
+                    </div>
+
+                `;
+
+
+                handleItemAcquisition();
+
+            }
+
+        }
+
+    }
+
+
+    /* =====================================================
+       FIGHT
+    ===================================================== */
+
+    function fight() {
+
+        playSfx('sfx-sword');
+
+
+        let tp =
+            calculateTotalPower();
+
+
+        if (
+            tp >= currentCard.l
+        ) {
+
+            log(
+                `✅ Victory! You defeated ${currentCard.n}.`
+            );
+
+
+            p.lvl++;
+
+
+            if (
+                p.lvl > 10
+            ) {
+
+                win();
+
+            } else {
+
+                nextTurn();
+
+            }
+
+        }
+
+
+        else {
+
+            triggerShake();
+
+
+            log(`
+                <span style="color:#ff5969;">
+                    ❌ Defeated!
+                    You are thrown down 2 floors.
+                </span>
+            `);
+
+
+            p.lvl -= 2;
+
+
+            updateUI();
+
+
+            if (
+                p.lvl < 1
+            ) {
+
+                checkDeath(
+                    `Defeated in a duel against ${currentCard.n}.`
+                );
+
+            } else {
+
+                nextTurn();
+
+            }
+
+        }
+
+    }
+
+
+    /* =====================================================
+       RUN / ESCAPE
+
+       1-2
+       FAILED
+       -2 LEVEL
+
+       3-4
+       SUCCESS
+       +1 LEVEL
+       RANDOM EQUIPMENT LOST
+
+       5-6
+       SUCCESS
+       +1 LEVEL
+       NOTHING LOST
+
+       ELF
+       +1 DICE BONUS
+    ===================================================== */
+
+    function attemptRun() {
+
+        playSfx('sfx-dice');
+
+
+        const rollDisplay =
+            document.getElementById(
+                'dice-roll'
+            );
+
+
+        rollDisplay.style.display =
+            'block';
+
+
+        let roll =
+            Math.floor(
+                Math.random() * 6
+            ) + 1;
+
+
+        /* =========================
+           ELF BONUS
+        ========================= */
+
+        if (
+            p.race === "Elf"
+        ) {
+
+            roll += 1;
+
+        }
+
+
+        /*
+            Elf can internally roll 7.
+            It is still counted as the
+            highest success category.
+        */
+
+        rollDisplay.innerText =
+            "🎲 " +
+            Math.min(roll, 6);
+
+
+        setTimeout(() => {
+
+            rollDisplay.style.display =
+                'none';
+
+
+            /* =========================
+               1-2
+               FAILED
+               -2 LEVEL
+            ========================= */
+
+            if (
+                roll <= 2
+            ) {
+
+                triggerShake();
+
+
+                log(`
+                    <span style="color:#ff5969;">
+                        ❌ FAILED TO ESCAPE!
+                        Level -2.
+                    </span>
+                `);
+
+
+                p.lvl -= 2;
+
+
+                updateUI();
+
+
+                if (
+                    p.lvl < 1
+                ) {
+
+                    checkDeath(
+                        "You died while trying to escape."
+                    );
+
+                } else {
+
+                    nextTurn();
+
+                }
+
+            }
+
+
+            /* =========================
+               3-4
+               SUCCESS
+               +1 LEVEL
+               LOSE RANDOM EQUIPMENT
+            ========================= */
+
+            else if (
+                roll <= 4
+            ) {
+
+                p.lvl += 1;
+
+
+                let lostItem =
+                    null;
+
+
+                if (
+                    p.inv.length > 0
+                ) {
+
+                    const randomIndex =
+                        Math.floor(
+                            Math.random() *
+                            p.inv.length
+                        );
+
+
+                    lostItem =
+                        p.inv[randomIndex];
+
+
+                    p.inv.splice(
+                        randomIndex,
+                        1
+                    );
+
+
+                    log(`
+                        <span style="color:var(--gold);">
+                            🏃 ESCAPED!
+                            Level +1,
+                            but you lost
+                            <b>${lostItem.n}</b>.
+                        </span>
+                    `);
+
+                }
+
+
+                else {
+
+                    log(`
+                        <span style="color:var(--green);">
+                            🏃 ESCAPED!
+                            Level +1.
+                            <br>
+                            You had no equipment to lose.
+                        </span>
+                    `);
+
+                }
+
+
+                updateUI();
+
+
+                if (
+                    p.lvl > 10
+                ) {
+
+                    win();
+
+                } else {
+
+                    nextTurn();
+
+                }
+
+            }
+
+
+            /* =========================
+               5-6
+               PERFECT ESCAPE
+               +1 LEVEL
+            ========================= */
+
+            else {
+
+                p.lvl += 1;
+
+
+                log(`
+                    <span style="color:var(--green);">
+                        🏃 PERFECT ESCAPE!
+                        Level +1!
+                    </span>
+                `);
+
+
+                updateUI();
+
+
+                if (
+                    p.lvl > 10
+                ) {
+
+                    win();
+
+                } else {
+
+                    nextTurn();
+
+                }
+
+            }
+
+        }, 700);
+
+    }
+
+
+    /* =====================================================
+       TRAP
+    ===================================================== */
+
+    function applyTrap(t) {
+
+        playSfx('sfx-trap');
+
+        triggerShake();
+
+
+        log(`
+            <span
+                style="
+                    color:var(--purple);
+                    font-weight:bold;
+                "
+            >
+                ⚠️ TRAPPED:
+                ${t.m}
+            </span>
+        `);
+
+
+        if (
+            t.e === "lvl"
+        ) {
+
+            p.lvl -= 1;
+
+        }
+
+
+        if (
+            t.e === "reset"
+        ) {
+
+            p.lvl = 1;
+
+        }
+
+
+        if (
+            t.e === "item" &&
+            p.inv.length > 0
+        ) {
+
+            p.inv.pop();
+
+        }
+
+
+        updateUI();
+
+
+        if (
+            p.lvl < 1
+        ) {
+
+            checkDeath(
+                `Killed by ${t.n}.`
+            );
+
+        } else {
+
+            setTimeout(
+                nextTurn,
+                1800
+            );
+
+        }
+
+    }
+
+
+    /* =====================================================
+       CALCULATE TOTAL POWER
+    ===================================================== */
 
     function calculateTotalPower() {
 
-        let itemPwr = p.inv.reduce(
-            (s, i) => s + i.p + (p.race === "Dwarf" ? 1 : 0),
-            0
+        let itemPwr =
+            p.inv.reduce(
+
+                (s, i) =>
+                    s +
+                    i.p +
+                    (
+                        p.race === "Dwarf"
+                            ? 1
+                            : 0
+                    ),
+
+                0
+
+            );
+
+
+        return (
+            p.lvl +
+            p.basePwr +
+            itemPwr
         );
 
-        return p.lvl + p.basePwr + itemPwr;
     }
+
+
+    /* =====================================================
+       UPDATE UI
+    ===================================================== */
 
     function updateUI() {
 
-        document.getElementById('disp-name').innerText = p.name;
+        document.getElementById(
+            'disp-name'
+        ).innerText =
+            p.name;
 
-        document.getElementById('disp-lvl').innerText = p.lvl;
 
-        document.getElementById('disp-total').innerText = calculateTotalPower();
+        document.getElementById(
+            'disp-lvl'
+        ).innerText =
+            p.lvl;
 
-        document.getElementById('disp-race-info').innerText =
-            `${races[p.race].ico} ${p.race}: ${races[p.race].bonus}`;
 
-        document.getElementById('inv-list').innerHTML =
+        document.getElementById(
+            'disp-total'
+        ).innerText =
+            calculateTotalPower();
+
+
+        document.getElementById(
+            'disp-race-info'
+        ).innerText =
+            `${races[p.race].ico}
+             ${p.race}:
+             ${races[p.race].bonus}`;
+
+
+        document.getElementById(
+            'inv-list'
+        ).innerHTML =
+
             p.inv
-                .map(i => `<span class="inv-slot">${i.n} (+${i.p})</span>`)
+                .map(
+
+                    i =>
+                        `<span class="inv-slot">
+                            ${i.n} (+${i.p})
+                        </span>`
+
+                )
                 .join('');
 
-        for (let i = 1; i <= 10; i++) {
 
-            let cell = document.getElementById(`cell-${i}`);
+        for (
+            let i = 1;
+            i <= 10;
+            i++
+        ) {
 
-            if (i <= p.lvl) {
-                cell.classList.add('active');
+            let cell =
+                document.getElementById(
+                    `cell-${i}`
+                );
+
+
+            if (
+                i <= p.lvl
+            ) {
+
+                cell.classList.add(
+                    'active'
+                );
+
             } else {
-                cell.classList.remove('active');
+
+                cell.classList.remove(
+                    'active'
+                );
+
             }
+
         }
+
     }
+
+
+    /* =====================================================
+       ITEM ACQUISITION
+    ===================================================== */
 
     function handleItemAcquisition() {
 
         playSfx('sfx-item');
 
-        if (p.inv.length < 5) {
 
-            p.inv.push(pendingItem);
+        if (
+            p.inv.length < 5
+        ) {
 
-            log(`Obtained ${pendingItem.n}.`);
+            p.inv.push(
+                pendingItem
+            );
 
-            pendingItem = null;
 
-            setTimeout(nextTurn, 1500);
+            log(
+                `💰 Obtained ${pendingItem.n}.`
+            );
 
-        } else {
 
-            document.getElementById('replace-ui').style.display = 'block';
+            pendingItem =
+                null;
 
-            let opt = document.getElementById('replace-options');
 
-            opt.innerHTML = p.inv
-                .map(
-                    (item, idx) =>
-                        `<button onclick="replaceItem(${idx})">
-                            Replace ${item.n}
-                        </button>`
-                )
-                .join('');
+            setTimeout(
+                nextTurn,
+                1500
+            );
+
         }
+
+
+        else {
+
+            document.getElementById(
+                'replace-ui'
+            ).style.display =
+                'block';
+
+
+            let opt =
+                document.getElementById(
+                    'replace-options'
+                );
+
+
+            opt.innerHTML =
+
+                p.inv
+                    .map(
+
+                        (item, idx) =>
+
+                            `<button
+                                onclick="replaceItem(${idx})"
+                            >
+                                Replace ${item.n}
+                            </button>`
+
+                    )
+                    .join('');
+
+        }
+
     }
+
+
+    /* =====================================================
+       REPLACE ITEM
+    ===================================================== */
 
     function replaceItem(idx) {
 
-        p.inv[idx] = pendingItem;
+        p.inv[idx] =
+            pendingItem;
 
-        pendingItem = null;
 
-        document.getElementById('replace-ui').style.display = 'none';
+        pendingItem =
+            null;
+
+
+        document.getElementById(
+            'replace-ui'
+        ).style.display =
+            'none';
+
 
         nextTurn();
+
     }
+
+
+    /* =====================================================
+       CANCEL ITEM
+    ===================================================== */
 
     function cancelItem() {
 
-        pendingItem = null;
+        pendingItem =
+            null;
 
-        document.getElementById('replace-ui').style.display = 'none';
+
+        document.getElementById(
+            'replace-ui'
+        ).style.display =
+            'none';
+
 
         nextTurn();
+
     }
+
+
+    /* =====================================================
+       NEXT TURN
+    ===================================================== */
 
     function nextTurn() {
 
-        if (isDead) return;
+        if (
+            isDead
+        ) return;
 
-        document.getElementById('combat-btns').style.display = 'none';
 
-        document.getElementById('action-btns').style.display = 'block';
+        document.getElementById(
+            'combat-btns'
+        ).style.display =
+            'none';
 
-        document.getElementById('arena-slot').innerHTML = "";
+
+        document.getElementById(
+            'action-btns'
+        ).style.display =
+            'block';
+
+
+        document.getElementById(
+            'arena-slot'
+        ).innerHTML =
+            "";
+
 
         updateUI();
+
     }
+
+
+    /* =====================================================
+       LOG
+    ===================================================== */
 
     function log(m) {
 
-        let l = document.getElementById('game-log');
+        let l =
+            document.getElementById(
+                'game-log'
+            );
 
-        l.innerHTML = `> ${m}<br>` + l.innerHTML;
 
-        l.scrollTop = 0;
+        l.innerHTML =
+            `> ${m}<br>` +
+            l.innerHTML;
+
+
+        l.scrollTop =
+            0;
+
     }
+
+
+    /* =====================================================
+       DEATH
+    ===================================================== */
 
     function checkDeath(reason) {
 
-        isDead = true;
+        isDead =
+            true;
 
-        playSfx('sfx-death');
 
-        document.getElementById('bgm').pause();
+        playSfx(
+            'sfx-death'
+        );
 
-        document.body.style.background = "#300";
+
+        document.getElementById(
+            'bgm'
+        ).pause();
+
+
+        document.body.style.background =
+            "#300";
+
 
         log(`
-            <span style="color:white; background:red; padding:2px;">
+            <span
+                style="
+                    color:white;
+                    background:#d62839;
+                    padding:3px 6px;
+                    border-radius:3px;
+                "
+            >
                 RIP: ${reason}
             </span>
         `);
 
+
         setTimeout(() => {
 
-            alert("💀 THE WORLD HAS FALLEN\n\n" + reason);
+            alert(
+                "💀 THE WORLD HAS FALLEN\n\n" +
+                reason
+            );
+
 
             location.reload();
 
         }, 1500);
+
     }
+
+
+    /* =====================================================
+       WIN
+    ===================================================== */
 
     function win() {
 
-        document.getElementById('bgm').pause();
+        document.getElementById(
+            'bgm'
+        ).pause();
 
-        playSfx('sfx-win');
 
-        document.body.style.background = "gold";
+        playSfx(
+            'sfx-win'
+        );
+
+
+        document.body.style.background =
+            "radial-gradient(circle, #6b5715, #080b10)";
+
 
         log(`
-            <span style="color:black; background:white; font-weight:bold;">
+            <span
+                style="
+                    color:#111;
+                    background:var(--gold);
+                    font-weight:bold;
+                    padding:4px 7px;
+                    border-radius:3px;
+                "
+            >
                 🏆 LORD MUNCHING HAS FALLEN! 🏆
             </span>
         `);
 
+
         setTimeout(() => {
 
-            alert("🏆 LEGEND!\n\nThe Tower has fallen!");
+            alert(
+                "🏆 LEGEND!\n\n" +
+                "The Tower has fallen!"
+            );
+
 
             location.reload();
 
         }, 1500);
+
     }
+
 </script>
 
 </body>
